@@ -27,5 +27,12 @@ else:
 # Global Data
 
 
+def train(train_loader, n_epoch):
+    loss = 0
+    model.train()
+    pbar = tqdm(loader)
+    pass
+
+
 if __name__ == "__main__":
     pass
