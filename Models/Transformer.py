@@ -10,6 +10,20 @@ class InputEmbedding(nn.Module):
         x = self.embedding(x)  # 임베딩 레이어에 입력 데이터를 넣어 임베딩된 텐서를 얻습니다.
         return x
 
+class PositionalEncoding(nn.Module):
+    def __init__(self, vocab_size, d_model=512):
+        super(PositionalEncoding, self).__init__()
+        self.encoding = torch.zeros(vocab_size, d_model)
+
+    def forward(self)
+        self.encoding.requires_grad = False
+        pos = torch.arange(0, vocab_size)
+        pos = pos.float().unsqueeze(dim=1)
+        twopos = torch.arange(0, d_model, step=2).float()
+        self.encoding[:, 0::2] = torch.sin(pos / (10000 ** (twopos / d_model)))
+        self.encoding[:, 1::2] = torch.cos(pos / (10000 ** (twopos / d_model)))
+        return self.encoding
+
 # MultiHeadAttention
 class MultiHeadAttention(nn.Module):
     def __init__(self, vocab_size, num_heads=8, dropout_rate=0.1):
@@ -73,9 +87,10 @@ class FeedForwardNetwork(nn.Sequential):
 class Transformer(nn.Sequential):
     def __init__(self, vocab_size, d_model=512, dropout_rate=0.1, num_heads=8, expansion=8, depth=8):
         super(Transformer, self).__init__()
-        self.ie = InputEmbedding(vocab_size, d_model=d_model)
-        self.mha = MultiHeadAttention(vocab_size, num_heads=num_heads, dropout_rate=dropout_rate)
-        self.ffn = FeedForwardNetwork(vocab_size, expansion=expansion, dropout_rate=dropout_rate)
+        self.ie = InputEmbedding(vocab_size=vocab_size, d_model=d_model)
+        self.pe = PositionalEncoding(vocab_size=vocab_size, d_model=d_model)
+        self.mha = MultiHeadAttention(vocab_size=vocab_size, num_heads=num_heads, dropout_rate=dropout_rate)
+        self.ffn = FeedForwardNetwork(vocab_size=vocab_size, expansion=expansion, dropout_rate=dropout_rate)
         self.layer_norm = nn.LayerNorm(vocab_size)
         self.linear = nn.Linear(vocab_size, vocab_size)
         self.vocab_size = vocab_size
@@ -83,7 +98,9 @@ class Transformer(nn.Sequential):
     
     def forward(self, x, y): # x: encoder input, y: decoder input
         x = self.ie(x)
+        x = x + self.pe(x)
         y = self.ie(y)
+        y = y + self.pe(y)
         for i in range(self.depth):
             x = self.mha(q=x)
             x = self.ffn(x)
