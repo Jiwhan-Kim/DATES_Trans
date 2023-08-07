@@ -1,7 +1,6 @@
 '''
 DATES Lab
 Transformer
-Model Check for CIFAR10
 Training
 Made by KimJW (SSE21)
 '''
